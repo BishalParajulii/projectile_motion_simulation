@@ -1,13 +1,12 @@
 import easygui
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import seaborn as sns
 
 ## Easy GUI ##
-msg = "Enter velocity & angle"
+msg = "Enter velocity, angle, and mass"
 title = "Input for projectile simulation"
-fieldNames = ["Velocity", "Angle"]
+fieldNames = ["Velocity", "Angle", "Mass"]
 fieldValues = []  # we start with blanks for the values
 fieldValues = easygui.multenterbox(msg, title, fieldNames)
 print(fieldValues)
@@ -22,14 +21,20 @@ while 1:
     fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
 print("Reply was:", fieldValues)
 
-## Matplotlib Animation ##
+## Matplotlib Plot ##
 sns.set()
 fig, ax = plt.subplots()
 g = 9.81  # value of gravity
 v = float(fieldValues[0])  # initial velocity
 theta = float(fieldValues[1]) * np.pi / 180.0  # initial angle of launch in radians
-vx = v * np.cos(theta)
-vy = v * np.sin(theta)
+m = float(fieldValues[2])  # mass of the projectile
+
+# Adjust initial velocity based on mass
+# Assuming a simple inverse relationship for demonstration
+V_adj = v * (1 / (1 + m / 10.0))
+
+vx = V_adj * np.cos(theta)
+vy = V_adj * np.sin(theta)
 x, y = 0, 0
 
 # Arrays to store the full trajectory
@@ -57,21 +62,8 @@ y_max = np.max(y_data) * 1.1
 ax.set_xlim(0, x_max)
 ax.set_ylim(0, y_max)
 
-# Plot initial point and the ball
-point, = ax.plot([x_data[0]], [y_data[0]], 'bo')
-line, = ax.plot([], [], 'r-', lw=2)  # Red line to show trajectory
-
-# Function to update the animation
-def animate(num):
-    point.set_data([x_data[num]], [y_data[num]])
-    if y_data[num] > 0:  # Only draw the trajectory when the ball is above the x-axis
-        line.set_data(x_data[:num+1], y_data[:num+1])
-    else:
-        line.set_data([], [])
-    return point, line
-
-# Create animation
-ani = animation.FuncAnimation(fig, animate, frames=len(x_data), interval=50, blit=True)
+# Plot the trajectory
+ax.plot(x_data, y_data, 'r-', lw=2)  # Red line to show trajectory
 
 # Add labels and title
 ax.set_xlabel('X Distance (m)')
